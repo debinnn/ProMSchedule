@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAllTeamMembers, createTeamMember, updateTeamMember, toggleMemberStatus } from '../utils/localStorage';
+import { getAllTeamMembers, createTeamMember, updateTeamMember, toggleMemberStatus } from '../firebase/firestore';
 
 const TeamManagement = () => {
   const { isEditor } = useAuth();

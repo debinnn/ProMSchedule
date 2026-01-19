@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { authenticateUser } from '../utils/localStorage';
+import { loginUser } from '../firebase/firestore';
 
 const Login = ({ onClose }) => {
   const [username, setUsername] = useState('');
@@ -8,11 +8,11 @@ const Login = ({ onClose }) => {
   const [error, setError] = useState('');
   const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    const user = authenticateUser(username, password);
+    const user = await loginUser(username, password);
     if (user) {
       login(user);
       onClose();

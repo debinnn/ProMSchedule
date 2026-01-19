@@ -8,7 +8,7 @@ import {
   getAssignedMemberIds,
   getCustomAssignments,
   addCustomAssignment
-} from '../utils/localStorage';
+} from '../firebase/firestore';
 
 const AddMemberModal = ({ dateStr, shiftType, onClose, onSuccess }) => {
   const [selectedMember, setSelectedMember] = useState('');

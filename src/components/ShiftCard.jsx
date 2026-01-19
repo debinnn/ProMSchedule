@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getShiftLabel, getShiftTime, getSlotLabel } from '../utils/dateHelpers';
-import { deleteShiftMember } from '../utils/localStorage';
+import { deleteShiftMember } from '../firebase/firestore';
 
 const ShiftCard = ({ shiftType, members, dateStr, onAddMember, onUpdate, onEditMember }) => {
   const { isEditor } = useAuth();

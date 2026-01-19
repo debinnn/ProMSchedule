@@ -428,3 +428,60 @@ export const pasteScheduleToDateRange = async (sourceSchedule, targetDateStrings
   
   await batch.commit();
 };
+
+// Additional helper functions needed by components
+export const getActiveTeamMembers = async () => {
+  const members = await getAllTeamMembers();
+  return members.filter(m => m.active);
+};
+
+export const getAssignedMemberIds = async (dateStr) => {
+  const schedule = await getScheduleForDate(dateStr);
+  const assignedIds = new Set();
+  
+  Object.values(schedule.shifts).forEach(shift => {
+    shift.forEach(member => assignedIds.add(member.memberId));
+  });
+  
+  schedule.onLeave.forEach(leave => assignedIds.add(leave.memberId));
+  
+  return Array.from(assignedIds);
+};
+
+export const createUser = async (username, password) => {
+  const usersSnapshot = await getDocs(collection(db, 'users'));
+  const maxId = Math.max(...usersSnapshot.docs.map(doc => parseInt(doc.id) || 0), 0);
+  const newId = (maxId + 1).toString();
+  
+  const userData = {
+    id: newId,
+    username,
+    password,
+    role: 'public',
+    createdAt: new Date().toISOString().split('T')[0]
+  };
+  
+  const userRef = doc(db, 'users', newId);
+  await setDoc(userRef, userData);
+  return userData;
+};
+
+export const resetUserPassword = async (userId, newPassword) => {
+  const userRef = doc(db, 'users', userId);
+  await updateDoc(userRef, { password: newPassword });
+};
+
+export const createTeamMember = async (name) => {
+  return await addTeamMember({ name, active: true });
+};
+
+export const toggleMemberStatus = async (memberId) => {
+  const memberRef = doc(db, 'teamMembers', memberId.toString());
+  const memberDoc = await getDoc(memberRef);
+  
+  if (memberDoc.exists()) {
+    const currentStatus = memberDoc.data().active;
+    await updateDoc(memberRef, { active: !currentStatus });
+  }
+};
+

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAllUsers, createUser, deleteUser, resetUserPassword } from '../utils/localStorage';
+import { getAllUsers, createUser, deleteUser, resetUserPassword } from '../firebase/firestore';
 
 const AdminPanel = () => {
   const { isAdmin } = useAuth();

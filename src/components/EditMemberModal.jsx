@@ -7,7 +7,7 @@ import {
   isAssignmentTaken,
   getCustomAssignments,
   addCustomAssignment
-} from '../utils/localStorage';
+} from '../firebase/firestore';
 
 const EditMemberModal = ({ dateStr, shiftType, member, onClose, onSuccess }) => {
   const [selectedSlot, setSelectedSlot] = useState(member.slot ? member.slot.toString() : '');

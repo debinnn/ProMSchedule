@@ -19,7 +19,7 @@ import {
   formatShortDate,
   getShiftLabel
 } from '../utils/dateHelpers';
-import { getScheduleForDate, getEmptyShifts, getUnassignedSlots } from '../utils/localStorage';
+import { getScheduleForDate, getEmptyShifts, getUnassignedSlots } from '../firebase/firestore';
 import ShiftCard from './ShiftCard';
 import OnLeaveSection from './OnLeaveSection';
 import AddMemberModal from './AddMemberModal';

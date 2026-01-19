@@ -7,7 +7,7 @@ import {
   getAssignedMemberIds,
   getCustomLeaveReasons,
   addCustomLeaveReason
-} from '../utils/localStorage';
+} from '../firebase/firestore';
 
 const OnLeaveSection = ({ dateStr, onLeave, onUpdate }) => {
   const { isEditor } = useAuth();

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { formatDisplayDate, parseDate, formatDate, getNextDay } from '../utils/dateHelpers';
-import { pasteScheduleToDateRange } from '../utils/localStorage';
+import { pasteScheduleToDateRange } from '../firebase/firestore';
 
 const CopyPasteScheduleModal = ({ copiedSchedule, sourceDate, onClose, onSuccess }) => {
   const [startDate, setStartDate] = useState('');
