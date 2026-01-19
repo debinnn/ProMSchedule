@@ -14,9 +14,9 @@ const ShiftCard = ({ shiftType, members, dateStr, onAddMember, onUpdate, onEditM
     setTimeout(() => setShowToast(false), 3000);
   };
 
-  const handleDelete = (entryId) => {
+  const handleDelete = async (entryId) => {
     if (window.confirm('Are you sure you want to remove this member from the shift?')) {
-      deleteShiftMember(dateStr, shiftType, entryId);
+      await deleteShiftMember(dateStr, shiftType, entryId);
       onUpdate();
       showMessage('Member removed successfully');
     }

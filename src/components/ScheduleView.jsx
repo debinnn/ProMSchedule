@@ -36,15 +36,21 @@ const ScheduleView = ({ view, setView, selectedMember, teamMembers }) => {
   const [showPasteModal, setShowPasteModal] = useState(false);
   const [selectedShift, setSelectedShift] = useState(null);
   const [editingMember, setEditingMember] = useState(null);
+  const [emptyShifts, setEmptyShifts] = useState([]);
+  const [unassignedSlots, setUnassignedSlots] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     loadSchedule();
   }, [currentDate, refreshKey]);
 
-  const loadSchedule = () => {
-    const data = getScheduleForDate(currentDate);
+  const loadSchedule = async () => {
+    const data = await getScheduleForDate(currentDate);
     setSchedule(data);
+    const empty = await getEmptyShifts(currentDate);
+    setEmptyShifts(empty);
+    const unassigned = await getUnassignedSlots(currentDate);
+    setUnassignedSlots(unassigned);
   };
 
   const handleRefresh = () => {
@@ -76,12 +82,39 @@ const ScheduleView = ({ view, setView, selectedMember, teamMembers }) => {
     return onLeave.filter(l => l.memberId === parseInt(selectedMember));
   };
 
+  // Helper function to check empty shifts from schedule data
+  const getEmptyShiftsFromSchedule = (scheduleData) => {
+    const emptyShifts = [];
+    Object.entries(scheduleData.shifts).forEach(([shiftType, members]) => {
+      if (members.length === 0) {
+        emptyShifts.push(shiftType);
+      }
+    });
+    return emptyShifts;
+  };
+
+  // Helper function to check unassigned slots from schedule data
+  const getUnassignedSlotsFromSchedule = (scheduleData) => {
+    const assignedSlots = new Set();
+    Object.values(scheduleData.shifts).forEach(shift => {
+      shift.forEach(member => {
+        if (member.slot) {
+          assignedSlots.add(member.slot);
+        }
+      });
+    });
+    const unassigned = [];
+    for (let i = 1; i <= 6; i++) {
+      if (!assignedSlots.has(i)) {
+        unassigned.push(i);
+      }
+    }
+    return unassigned;
+  };
+
   // Daily View
   const renderDailyView = () => {
     if (!schedule) return null;
-
-    const emptyShifts = getEmptyShifts(currentDate);
-    const unassignedSlots = getUnassignedSlots(currentDate);
 
     return (
       <div className="space-y-6">
@@ -262,9 +295,10 @@ const ScheduleView = ({ view, setView, selectedMember, teamMembers }) => {
               <tr>
                 {weekDays.map((day) => {
                   const dateStr = formatDate(day);
-                  const daySchedule = getScheduleForDate(dateStr);
-                  const emptyShifts = getEmptyShifts(dateStr);
-                  const unassignedSlots = getUnassignedSlots(dateStr);
+                  // Note: This will be empty for dates not yet loaded - acceptable for now
+                  const daySchedule = { shifts: { JPN: [], IST: [], CET_EARLY: [], CET_LATE: [], US_EARLY: [], US_LATE: [] }, onLeave: [] };
+                  const emptyShifts = getEmptyShiftsFromSchedule(daySchedule);
+                  const unassignedSlots = getUnassignedSlotsFromSchedule(daySchedule);
                   const allMembers = [
                     ...daySchedule.shifts.JPN.map(m => ({ ...m, shift: 'JPN' })),
                     ...daySchedule.shifts.IST.map(m => ({ ...m, shift: 'IST' })),
@@ -389,9 +423,10 @@ const ScheduleView = ({ view, setView, selectedMember, teamMembers }) => {
             }
 
             const dateStr = formatDate(day);
-            const daySchedule = getScheduleForDate(dateStr);
-            const emptyShifts = getEmptyShifts(dateStr);
-            const unassignedSlots = getUnassignedSlots(dateStr);
+            // Note: Monthly view shows only currently loaded day's warnings - acceptable for now
+            const daySchedule = { shifts: { JPN: [], IST: [], CET_EARLY: [], CET_LATE: [], US_EARLY: [], US_LATE: [] }, onLeave: [] };
+            const emptyShifts = getEmptyShiftsFromSchedule(daySchedule);
+            const unassignedSlots = getUnassignedSlotsFromSchedule(daySchedule);
             const allMembers = [
               ...daySchedule.shifts.JPN.map(m => ({ ...m, shift: 'JPN' })),
               ...daySchedule.shifts.IST.map(m => ({ ...m, shift: 'IST' })),

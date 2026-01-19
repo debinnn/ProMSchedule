@@ -20,16 +20,20 @@ const AddMemberModal = ({ dateStr, shiftType, onClose, onSuccess }) => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const allMembers = getActiveTeamMembers();
-    const assignedIds = getAssignedMemberIds(dateStr);
-    const available = allMembers.filter(m => !assignedIds.includes(m.id));
-    setAvailableMembers(available);
-    setCustomAssignments(getCustomAssignments());
+    const loadData = async () => {
+      const allMembers = await getActiveTeamMembers();
+      const assignedIds = await getAssignedMemberIds(dateStr);
+      const available = allMembers.filter(m => !assignedIds.includes(m.id));
+      setAvailableMembers(available);
+      const assignments = await getCustomAssignments();
+      setCustomAssignments(assignments);
+    };
+    loadData();
   }, [dateStr]);
 
   const availableSlots = getAvailableSlots(shiftType);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -40,7 +44,8 @@ const AddMemberModal = ({ dateStr, shiftType, onClose, onSuccess }) => {
 
     if (selectedSlot) {
       const slotNum = parseInt(selectedSlot);
-      if (isSlotTaken(dateStr, shiftType, slotNum)) {
+      const taken = await isSlotTaken(dateStr, shiftType, slotNum);
+      if (taken) {
         setError('This slot is already taken');
         return;
       }
@@ -48,15 +53,18 @@ const AddMemberModal = ({ dateStr, shiftType, onClose, onSuccess }) => {
 
     const finalAssignment = assignment === 'custom' ? customAssignment : assignment;
     
-    if (finalAssignment && isAssignmentTaken(dateStr, finalAssignment)) {
-      setError('This assignment is already taken for this day');
-      return;
+    if (finalAssignment) {
+      const taken = await isAssignmentTaken(dateStr, finalAssignment);
+      if (taken) {
+        setError('This assignment is already taken for this day');
+        return;
+      }
     }
 
     const member = availableMembers.find(m => m.id === parseInt(selectedMember));
 
     if (assignment === 'custom' && customAssignment) {
-      addCustomAssignment(customAssignment);
+      await addCustomAssignment(customAssignment);
     }
 
     const memberData = {
@@ -72,7 +80,7 @@ const AddMemberModal = ({ dateStr, shiftType, onClose, onSuccess }) => {
       memberData.assignment = finalAssignment;
     }
     
-    addShiftMember(dateStr, shiftType, memberData);
+    await addShiftMember(dateStr, shiftType, memberData);
 
     onSuccess();
     onClose();

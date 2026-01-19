@@ -21,11 +21,15 @@ const AdminPanel = () => {
       window.location.href = '/';
       return;
     }
-    loadUsers();
+    const loadData = async () => {
+      await loadUsers();
+    };
+    loadData();
   }, []);
 
-  const loadUsers = () => {
-    setUsers(getAllUsers());
+  const loadUsers = async () => {
+    const usersData = await getAllUsers();
+    setUsers(usersData);
   };
 
   const showMessage = (message) => {
@@ -60,7 +64,7 @@ const AdminPanel = () => {
     return null;
   };
 
-  const handleAddUser = (e) => {
+  const handleAddUser = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -77,8 +81,8 @@ const AdminPanel = () => {
     }
 
     try {
-      createUser(username, password);
-      loadUsers();
+      await createUser(username, password);
+      await loadUsers();
       setShowAddModal(false);
       setUsername('');
       setPassword('');
@@ -88,15 +92,15 @@ const AdminPanel = () => {
     }
   };
 
-  const handleDeleteUser = (userId) => {
+  const handleDeleteUser = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-      deleteUser(userId);
-      loadUsers();
+      await deleteUser(userId);
+      await loadUsers();
       showMessage('User deleted successfully');
     }
   };
 
-  const handleResetPassword = (e) => {
+  const handleResetPassword = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -106,7 +110,7 @@ const AdminPanel = () => {
       return;
     }
 
-    resetUserPassword(selectedUser.id, newPassword);
+    await resetUserPassword(selectedUser.id, newPassword);
     setShowResetModal(false);
     setSelectedUser(null);
     setNewPassword('');

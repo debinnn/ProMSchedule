@@ -19,11 +19,15 @@ const TeamManagement = () => {
       window.location.href = '/';
       return;
     }
-    loadMembers();
+    const loadData = async () => {
+      await loadMembers();
+    };
+    loadData();
   }, []);
 
-  const loadMembers = () => {
-    setMembers(getAllTeamMembers());
+  const loadMembers = async () => {
+    const membersData = await getAllTeamMembers();
+    setMembers(membersData);
   };
 
   const showMessage = (message) => {
@@ -32,7 +36,7 @@ const TeamManagement = () => {
     setTimeout(() => setShowToast(false), 3000);
   };
 
-  const handleAddMember = (e) => {
+  const handleAddMember = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -42,8 +46,8 @@ const TeamManagement = () => {
     }
 
     try {
-      createTeamMember(name);
-      loadMembers();
+      await createTeamMember(name);
+      await loadMembers();
       setShowAddModal(false);
       setName('');
       showMessage('Team member added successfully');
@@ -52,7 +56,7 @@ const TeamManagement = () => {
     }
   };
 
-  const handleEditMember = (e) => {
+  const handleEditMember = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -62,8 +66,8 @@ const TeamManagement = () => {
     }
 
     try {
-      updateTeamMember(selectedMember.id, { name });
-      loadMembers();
+      await updateTeamMember(selectedMember.id, { name });
+      await loadMembers();
       setShowEditModal(false);
       setSelectedMember(null);
       setName('');
@@ -73,13 +77,13 @@ const TeamManagement = () => {
     }
   };
 
-  const handleToggleStatus = (memberId) => {
+  const handleToggleStatus = async (memberId) => {
     const member = members.find(m => m.id === memberId);
     const action = member.active ? 'deactivate' : 'activate';
     
     if (window.confirm(`Are you sure you want to ${action} this team member?`)) {
-      toggleMemberStatus(memberId);
-      loadMembers();
+      await toggleMemberStatus(memberId);
+      await loadMembers();
       showMessage(`Team member ${action}d successfully`);
     }
   };

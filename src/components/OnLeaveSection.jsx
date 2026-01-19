@@ -23,11 +23,15 @@ const OnLeaveSection = ({ dateStr, onLeave, onUpdate }) => {
 
   useEffect(() => {
     if (showModal) {
-      const allMembers = getActiveTeamMembers();
-      const assignedIds = getAssignedMemberIds(dateStr);
-      const available = allMembers.filter(m => !assignedIds.includes(m.id));
-      setAvailableMembers(available);
-      setLeaveReasons(getCustomLeaveReasons());
+      const loadData = async () => {
+        const allMembers = await getActiveTeamMembers();
+        const assignedIds = await getAssignedMemberIds(dateStr);
+        const available = allMembers.filter(m => !assignedIds.includes(m.id));
+        setAvailableMembers(available);
+        const reasons = await getCustomLeaveReasons();
+        setLeaveReasons(reasons);
+      };
+      loadData();
     }
   }, [showModal, dateStr]);
 
@@ -37,7 +41,7 @@ const OnLeaveSection = ({ dateStr, onLeave, onUpdate }) => {
     setTimeout(() => setShowToast(false), 3000);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -50,10 +54,10 @@ const OnLeaveSection = ({ dateStr, onLeave, onUpdate }) => {
     const finalReason = reason === 'custom' ? customReason : reason;
 
     if (reason === 'custom' && customReason) {
-      addCustomLeaveReason(customReason);
+      await addCustomLeaveReason(customReason);
     }
 
-    addOnLeave(dateStr, {
+    await addOnLeave(dateStr, {
       memberId: member.id,
       memberName: member.name,
       reason: finalReason
@@ -67,9 +71,9 @@ const OnLeaveSection = ({ dateStr, onLeave, onUpdate }) => {
     showMessage('Member added to leave list');
   };
 
-  const handleDelete = (entryId) => {
+  const handleDelete = async (entryId) => {
     if (window.confirm('Are you sure you want to remove this member from leave?')) {
-      deleteOnLeave(dateStr, entryId);
+      await deleteOnLeave(dateStr, entryId);
       onUpdate();
       showMessage('Member removed from leave list');
     }

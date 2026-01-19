@@ -17,30 +17,34 @@ const EditMemberModal = ({ dateStr, shiftType, member, onClose, onSuccess }) => 
   const [error, setError] = useState('');
 
   useEffect(() => {
-    setCustomAssignments(getCustomAssignments());
-    
-    // Set initial assignment value
-    if (member.assignment) {
-      const existingAssignments = getCustomAssignments();
-      if (existingAssignments.includes(member.assignment)) {
-        setAssignment(member.assignment);
-      } else {
-        setAssignment('custom');
-        setCustomAssignment(member.assignment);
+    const loadData = async () => {
+      const assignments = await getCustomAssignments();
+      setCustomAssignments(assignments);
+      
+      // Set initial assignment value
+      if (member.assignment) {
+        const existingAssignments = await getCustomAssignments();
+        if (existingAssignments.includes(member.assignment)) {
+          setAssignment(member.assignment);
+        } else {
+          setAssignment('custom');
+          setCustomAssignment(member.assignment);
+        }
       }
-    }
+    };
+    loadData();
   }, [member.assignment]);
 
   const availableSlots = getAvailableSlots(shiftType);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     if (selectedSlot) {
       const slotNum = parseInt(selectedSlot);
       // Check if slot is taken by someone else
-      if (slotNum !== member.slot && isSlotTaken(dateStr, shiftType, slotNum)) {
+      if (slotNum !== member.slot && await isSlotTaken(dateStr, shiftType, slotNum)) {
         setError('This slot is already taken');
         return;
       }
@@ -49,13 +53,13 @@ const EditMemberModal = ({ dateStr, shiftType, member, onClose, onSuccess }) => 
     const finalAssignment = assignment === 'custom' ? customAssignment : assignment;
     
     // Check if assignment is taken by someone else
-    if (finalAssignment && finalAssignment !== member.assignment && isAssignmentTaken(dateStr, finalAssignment)) {
+    if (finalAssignment && finalAssignment !== member.assignment && await isAssignmentTaken(dateStr, finalAssignment)) {
       setError('This assignment is already taken for this day');
       return;
     }
 
     if (assignment === 'custom' && customAssignment) {
-      addCustomAssignment(customAssignment);
+      await addCustomAssignment(customAssignment);
     }
 
     const updates = {
@@ -75,15 +79,15 @@ const EditMemberModal = ({ dateStr, shiftType, member, onClose, onSuccess }) => 
       updates.assignment = undefined;
     }
 
-    updateShiftMember(dateStr, shiftType, member.id, updates);
+    await updateShiftMember(dateStr, shiftType, member.id, updates);
 
     onSuccess();
     onClose();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (window.confirm(`Are you sure you want to remove ${member.memberName} from this shift?`)) {
-      deleteShiftMember(dateStr, shiftType, member.id);
+      await deleteShiftMember(dateStr, shiftType, member.id);
       onSuccess();
       onClose();
     }
