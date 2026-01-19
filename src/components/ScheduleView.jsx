@@ -31,6 +31,7 @@ const ScheduleView = ({ view, setView, selectedMember, teamMembers }) => {
   const { isEditor } = useAuth();
   const [currentDate, setCurrentDate] = useState(getTodayString());
   const [schedule, setSchedule] = useState(null);
+  const [schedules, setSchedules] = useState({}); // Store multiple schedules for weekly/monthly views
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPasteModal, setShowPasteModal] = useState(false);
@@ -43,15 +44,33 @@ const ScheduleView = ({ view, setView, selectedMember, teamMembers }) => {
   useEffect(() => {
     loadSchedule();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentDate, refreshKey]);
+  }, [currentDate, refreshKey, view]);
 
   const loadSchedule = async () => {
-    const data = await getScheduleForDate(currentDate);
-    setSchedule(data);
-    const empty = await getEmptyShifts(currentDate);
-    setEmptyShifts(empty);
-    const unassigned = await getUnassignedSlots(currentDate);
-    setUnassignedSlots(unassigned);
+    if (view === 'daily') {
+      const data = await getScheduleForDate(currentDate);
+      setSchedule(data);
+      const empty = await getEmptyShifts(currentDate);
+      setEmptyShifts(empty);
+      const unassigned = await getUnassignedSlots(currentDate);
+      setUnassignedSlots(unassigned);
+    } else if (view === 'weekly') {
+      const weekDays = getWeekDays(currentDate);
+      const schedulesData = {};
+      for (const day of weekDays) {
+        const dateStr = formatDate(day);
+        schedulesData[dateStr] = await getScheduleForDate(dateStr);
+      }
+      setSchedules(schedulesData);
+    } else if (view === 'monthly') {
+      const monthDays = getMonthDays(currentDate);
+      const schedulesData = {};
+      for (const day of monthDays) {
+        const dateStr = formatDate(day);
+        schedulesData[dateStr] = await getScheduleForDate(dateStr);
+      }
+      setSchedules(schedulesData);
+    }
   };
 
   const handleRefresh = () => {
@@ -296,8 +315,7 @@ const ScheduleView = ({ view, setView, selectedMember, teamMembers }) => {
               <tr>
                 {weekDays.map((day) => {
                   const dateStr = formatDate(day);
-                  // Note: This will be empty for dates not yet loaded - acceptable for now
-                  const daySchedule = { shifts: { JPN: [], IST: [], CET_EARLY: [], CET_LATE: [], US_EARLY: [], US_LATE: [] }, onLeave: [] };
+                  const daySchedule = schedules[dateStr] || { shifts: { JPN: [], IST: [], CET_EARLY: [], CET_LATE: [], US_EARLY: [], US_LATE: [] }, onLeave: [] };
                   const emptyShifts = getEmptyShiftsFromSchedule(daySchedule);
                   const unassignedSlots = getUnassignedSlotsFromSchedule(daySchedule);
                   const allMembers = [
@@ -424,8 +442,7 @@ const ScheduleView = ({ view, setView, selectedMember, teamMembers }) => {
             }
 
             const dateStr = formatDate(day);
-            // Note: Monthly view shows only currently loaded day's warnings - acceptable for now
-            const daySchedule = { shifts: { JPN: [], IST: [], CET_EARLY: [], CET_LATE: [], US_EARLY: [], US_LATE: [] }, onLeave: [] };
+            const daySchedule = schedules[dateStr] || { shifts: { JPN: [], IST: [], CET_EARLY: [], CET_LATE: [], US_EARLY: [], US_LATE: [] }, onLeave: [] };
             const emptyShifts = getEmptyShiftsFromSchedule(daySchedule);
             const unassignedSlots = getUnassignedSlotsFromSchedule(daySchedule);
             const allMembers = [
