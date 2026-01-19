@@ -42,6 +42,7 @@ const ScheduleView = ({ view, setView, selectedMember, teamMembers }) => {
 
   useEffect(() => {
     loadSchedule();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDate, refreshKey]);
 
   const loadSchedule = async () => {

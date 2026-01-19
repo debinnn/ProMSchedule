@@ -23,6 +23,7 @@ const TeamManagement = () => {
       await loadMembers();
     };
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadMembers = async () => {

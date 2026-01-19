@@ -6,16 +6,9 @@ import {
   setDoc, 
   updateDoc, 
   deleteDoc,
-  writeBatch,
-  query,
-  where
+  writeBatch
 } from 'firebase/firestore';
-import { 
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut
-} from 'firebase/auth';
-import { db, auth } from './config';
+import { db } from './config';
 
 const initialData = {
   users: [
