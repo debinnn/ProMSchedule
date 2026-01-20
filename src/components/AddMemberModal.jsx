@@ -7,7 +7,8 @@ import {
   isAssignmentTaken,
   getAssignedMemberIds,
   getCustomAssignments,
-  addCustomAssignment
+  addCustomAssignment,
+  getScheduleForDate
 } from '../firebase/firestore';
 
 const AddMemberModal = ({ dateStr, shiftType, onClose, onSuccess }) => {
@@ -17,6 +18,7 @@ const AddMemberModal = ({ dateStr, shiftType, onClose, onSuccess }) => {
   const [customAssignment, setCustomAssignment] = useState('');
   const [availableMembers, setAvailableMembers] = useState([]);
   const [customAssignments, setCustomAssignments] = useState([]);
+  const [takenSlots, setTakenSlots] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -27,6 +29,16 @@ const AddMemberModal = ({ dateStr, shiftType, onClose, onSuccess }) => {
       setAvailableMembers(available);
       const assignments = await getCustomAssignments();
       setCustomAssignments(assignments);
+      
+      // Load which slots are already taken for this day
+      const schedule = await getScheduleForDate(dateStr);
+      const taken = [];
+      for (const shift of Object.values(schedule.shifts)) {
+        shift.forEach(member => {
+          if (member.slot) taken.push(member.slot);
+        });
+      }
+      setTakenSlots(taken);
     };
     loadData();
   }, [dateStr]);
@@ -42,11 +54,19 @@ const AddMemberModal = ({ dateStr, shiftType, onClose, onSuccess }) => {
       return;
     }
 
+    // Validate: Check if slot is valid for this shift
     if (selectedSlot) {
       const slotNum = parseInt(selectedSlot);
+      const validSlots = availableSlots;
+      if (!validSlots.includes(slotNum)) {
+        setError('This slot cannot be assigned to this shift (timing does not fit)');
+        return;
+      }
+
+      // Validate: Check if slot is taken for the day (slots are unique per day)
       const taken = await isSlotTaken(dateStr, shiftType, slotNum);
       if (taken) {
-        setError('This slot is already taken');
+        setError('This slot is already assigned to someone else today');
         return;
       }
     }
@@ -128,10 +148,10 @@ const AddMemberModal = ({ dateStr, shiftType, onClose, onSuccess }) => {
             >
               <option value="">No specific slot</option>
               {availableSlots.map((slot) => {
-                const taken = isSlotTaken(dateStr, shiftType, slot);
+                const taken = takenSlots.includes(slot);
                 return (
                   <option key={slot} value={slot} disabled={taken}>
-                    {getSlotLabel(slot)} {taken ? '(Taken)' : ''}
+                    {getSlotLabel(slot)}
                   </option>
                 );
               })}

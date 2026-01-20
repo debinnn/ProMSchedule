@@ -63,12 +63,12 @@ const ShiftCard = ({ shiftType, members, dateStr, onAddMember, onUpdate, onEditM
           {members.sort((a, b) => a.memberName.localeCompare(b.memberName)).map((member) => (
             <div
               key={member.id}
-              className="flex justify-between items-center bg-white rounded-md px-4 py-3 border border-gray-200"
+              className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white rounded-md px-3 sm:px-4 py-3 border border-gray-200 gap-2 sm:gap-0"
             >
-              <div className="flex items-center space-x-4">
-                <span className="font-medium text-gray-900">{member.memberName}</span>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                <span className="font-medium text-sm sm:text-base text-gray-900">{member.memberName}</span>
                 {member.slot && (
-                  <span className="text-sm text-gray-600">
+                  <span className="text-xs sm:text-sm text-gray-600">
                     {getSlotLabel(member.slot)}
                   </span>
                 )}
@@ -79,16 +79,16 @@ const ShiftCard = ({ shiftType, members, dateStr, onAddMember, onUpdate, onEditM
                 )}
               </div>
               {isEditor() && (
-                <div className="flex space-x-2">
+                <div className="flex space-x-2 self-end sm:self-auto">
                   <button
                     onClick={() => onEditMember(member)}
-                    className="text-sm text-blue-600 hover:text-blue-700"
+                    className="text-xs sm:text-sm text-blue-600 hover:text-blue-700"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(member.id)}
-                    className="text-sm text-red-600 hover:text-red-700"
+                    className="text-xs sm:text-sm text-red-600 hover:text-red-700"
                   >
                     Delete
                   </button>

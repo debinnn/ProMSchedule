@@ -8,6 +8,7 @@ import {
   getCustomLeaveReasons,
   addCustomLeaveReason
 } from '../firebase/firestore';
+import { eachDayOfInterval, parseISO, format } from 'date-fns';
 
 const OnLeaveSection = ({ dateStr, onLeave, onUpdate }) => {
   const { isEditor } = useAuth();
@@ -15,6 +16,9 @@ const OnLeaveSection = ({ dateStr, onLeave, onUpdate }) => {
   const [selectedMember, setSelectedMember] = useState('');
   const [reason, setReason] = useState('');
   const [customReason, setCustomReason] = useState('');
+  const [startDate, setStartDate] = useState(dateStr);
+  const [endDate, setEndDate] = useState(dateStr);
+  const [isBulk, setIsBulk] = useState(false);
   const [availableMembers, setAvailableMembers] = useState([]);
   const [leaveReasons, setLeaveReasons] = useState([]);
   const [error, setError] = useState('');
@@ -32,6 +36,9 @@ const OnLeaveSection = ({ dateStr, onLeave, onUpdate }) => {
         setLeaveReasons(reasons);
       };
       loadData();
+      setStartDate(dateStr);
+      setEndDate(dateStr);
+      setIsBulk(false);
     }
   }, [showModal, dateStr]);
 
@@ -50,6 +57,11 @@ const OnLeaveSection = ({ dateStr, onLeave, onUpdate }) => {
       return;
     }
 
+    if (isBulk && new Date(startDate) > new Date(endDate)) {
+      setError('End date must be after or equal to start date');
+      return;
+    }
+
     const member = availableMembers.find(m => m.id === parseInt(selectedMember));
     const finalReason = reason === 'custom' ? customReason : reason;
 
@@ -57,18 +69,36 @@ const OnLeaveSection = ({ dateStr, onLeave, onUpdate }) => {
       await addCustomLeaveReason(customReason);
     }
 
-    await addOnLeave(dateStr, {
+    const leaveEntry = {
       memberId: member.id,
       memberName: member.name,
       reason: finalReason
-    });
+    };
+
+    if (isBulk) {
+      // Apply leave for date range
+      const dates = eachDayOfInterval({
+        start: parseISO(startDate),
+        end: parseISO(endDate)
+      });
+      
+      for (const date of dates) {
+        const dateString = format(date, 'yyyy-MM-dd');
+        await addOnLeave(dateString, leaveEntry);
+      }
+      
+      showMessage(`Leave applied for ${dates.length} day${dates.length > 1 ? 's' : ''}`);
+    } else {
+      // Single day
+      await addOnLeave(dateStr, leaveEntry);
+      showMessage('Member added to leave list');
+    }
 
     onUpdate();
     setShowModal(false);
     setSelectedMember('');
     setReason('');
     setCustomReason('');
-    showMessage('Member added to leave list');
   };
 
   const handleDelete = async (entryId) => {
@@ -81,13 +111,13 @@ const OnLeaveSection = ({ dateStr, onLeave, onUpdate }) => {
 
   return (
     <>
-      <div className="bg-amber-50 border-l-4 border-amber-400 rounded-lg p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">On Leave</h3>
+      <div className="bg-amber-50 border-l-4 border-amber-400 rounded-lg p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900">On Leave</h3>
           {isEditor() && (
             <button
               onClick={() => setShowModal(true)}
-              className="px-4 py-2 text-sm font-medium text-amber-600 border border-amber-600 rounded-md hover:bg-amber-50"
+              className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-amber-600 border border-amber-600 rounded-md hover:bg-amber-50 w-full sm:w-auto"
             >
               + Add Member to Leave
             </button>
@@ -129,6 +159,47 @@ const OnLeaveSection = ({ dateStr, onLeave, onUpdate }) => {
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">Add Member to Leave</h2>
             
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="flex items-center space-x-2 text-sm font-medium text-gray-700 mb-3">
+                  <input
+                    type="checkbox"
+                    checked={isBulk}
+                    onChange={(e) => setIsBulk(e.target.checked)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span>Apply leave for multiple days</span>
+                </label>
+              </div>
+
+              {isBulk && (
+                <div className="grid grid-cols-2 gap-4 pb-2 border-b border-gray-200">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Start Date
+                    </label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      End Date
+                    </label>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Select Member

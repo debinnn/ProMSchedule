@@ -284,6 +284,7 @@ export const deleteOnLeave = async (dateStr, leaveId) => {
 };
 
 // Validation helpers
+// Check if a slot is already taken for the entire day (slots are unique per day, not per shift)
 export const isSlotTaken = async (dateStr, shiftType, slotNumber) => {
   const schedule = await getScheduleForDate(dateStr);
   for (const shift of Object.values(schedule.shifts)) {
@@ -450,7 +451,7 @@ export const createUser = async (username, password) => {
     id: newId,
     username,
     password,
-    role: 'public',
+    role: 'editor',
     createdAt: new Date().toISOString().split('T')[0]
   };
   

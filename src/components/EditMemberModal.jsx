@@ -6,7 +6,8 @@ import {
   isSlotTaken, 
   isAssignmentTaken,
   getCustomAssignments,
-  addCustomAssignment
+  addCustomAssignment,
+  getScheduleForDate
 } from '../firebase/firestore';
 
 const EditMemberModal = ({ dateStr, shiftType, member, onClose, onSuccess }) => {
@@ -14,12 +15,23 @@ const EditMemberModal = ({ dateStr, shiftType, member, onClose, onSuccess }) => 
   const [assignment, setAssignment] = useState('');
   const [customAssignment, setCustomAssignment] = useState('');
   const [customAssignments, setCustomAssignments] = useState([]);
+  const [takenSlots, setTakenSlots] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const loadData = async () => {
       const assignments = await getCustomAssignments();
       setCustomAssignments(assignments);
+      
+      // Load which slots are already taken for this day
+      const schedule = await getScheduleForDate(dateStr);
+      const taken = [];
+      for (const shift of Object.values(schedule.shifts)) {
+        shift.forEach(m => {
+          if (m.slot && m.id !== member.id) taken.push(m.slot);
+        });
+      }
+      setTakenSlots(taken);
       
       // Set initial assignment value
       if (member.assignment) {
@@ -33,7 +45,7 @@ const EditMemberModal = ({ dateStr, shiftType, member, onClose, onSuccess }) => 
       }
     };
     loadData();
-  }, [member.assignment]);
+  }, [member.assignment, dateStr, member.id]);
 
   const availableSlots = getAvailableSlots(shiftType);
 
@@ -43,9 +55,17 @@ const EditMemberModal = ({ dateStr, shiftType, member, onClose, onSuccess }) => 
 
     if (selectedSlot) {
       const slotNum = parseInt(selectedSlot);
-      // Check if slot is taken by someone else
+      
+      // Validate: Check if slot is valid for this shift
+      const validSlots = availableSlots;
+      if (!validSlots.includes(slotNum)) {
+        setError('This slot cannot be assigned to this shift (timing does not fit)');
+        return;
+      }
+      
+      // Check if slot is taken by someone else (slots are unique per day)
       if (slotNum !== member.slot && await isSlotTaken(dateStr, shiftType, slotNum)) {
-        setError('This slot is already taken');
+        setError('This slot is already assigned to someone else today');
         return;
       }
     }
@@ -119,10 +139,10 @@ const EditMemberModal = ({ dateStr, shiftType, member, onClose, onSuccess }) => 
             >
               <option value="">No specific slot</option>
               {availableSlots.map((slot) => {
-                const taken = slot !== member.slot && isSlotTaken(dateStr, shiftType, slot);
+                const taken = takenSlots.includes(slot);
                 return (
                   <option key={slot} value={slot} disabled={taken}>
-                    {getSlotLabel(slot)} {taken ? '(Taken)' : ''}
+                    {getSlotLabel(slot)}
                   </option>
                 );
               })}

@@ -162,18 +162,18 @@ const ScheduleView = ({ view, setView, selectedMember, teamMembers }) => {
             )}
           </div>
         )}
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-semibold text-gray-900">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
             {formatDisplayDate(parseDate(currentDate))}
-            <span className="text-base font-normal text-gray-600 ml-2">
+            <span className="text-sm sm:text-base font-normal text-gray-600 ml-2">
               ({formatDayOfWeek(parseDate(currentDate))})
             </span>
           </h2>
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap gap-2">
             {isEditor() && (
               <button
                 onClick={handlePasteSchedule}
-                className="px-4 py-2 text-sm font-medium text-green-600 border border-green-600 rounded-md hover:bg-green-50"
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-green-600 border border-green-600 rounded-md hover:bg-green-50"
                 title="Paste this day's schedule to a range of dates"
               >
                 📄 Paste to Range
@@ -181,21 +181,21 @@ const ScheduleView = ({ view, setView, selectedMember, teamMembers }) => {
             )}
             <button
               onClick={() => setCurrentDate(getPreviousDay(currentDate))}
-              className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              ← Previous Day
+              ← <span className="hidden sm:inline">Previous Day</span>
             </button>
             <button
               onClick={() => setCurrentDate(getTodayString())}
-              className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
             >
               Today
             </button>
             <button
               onClick={() => setCurrentDate(getNextDay(currentDate))}
-              className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              Next Day →
+              <span className="hidden sm:inline">Next Day</span> →
             </button>
           </div>
         </div>
@@ -268,28 +268,28 @@ const ScheduleView = ({ view, setView, selectedMember, teamMembers }) => {
 
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-semibold text-gray-900">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
             {getWeekLabel(currentDate)}
           </h2>
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setCurrentDate(getPreviousWeek(currentDate))}
-              className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              ← Previous Week
+              ← <span className="hidden sm:inline">Previous Week</span>
             </button>
             <button
               onClick={() => setCurrentDate(getTodayString())}
-              className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
             >
               This Week
             </button>
             <button
               onClick={() => setCurrentDate(getNextWeek(currentDate))}
-              className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              Next Week →
+              <span className="hidden sm:inline">Next Week</span> →
             </button>
           </div>
         </div>
@@ -403,20 +403,20 @@ const ScheduleView = ({ view, setView, selectedMember, teamMembers }) => {
 
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-semibold text-gray-900">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
             {getMonthLabel(currentDate)}
           </h2>
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setCurrentDate(getPreviousMonth(currentDate))}
-              className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              ← Previous Month
+              ← <span className="hidden sm:inline">Previous Month</span>
             </button>
             <button
               onClick={() => setCurrentDate(getTodayString())}
-              className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
             >
               Current Month
             </button>
@@ -518,7 +518,7 @@ const ScheduleView = ({ view, setView, selectedMember, teamMembers }) => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
       {view === 'daily' && renderDailyView()}
       {view === 'weekly' && renderWeeklyView()}
       {view === 'monthly' && renderMonthlyView()}
